@@ -109,7 +109,7 @@ int main(void)
 	DIE(epoll_fd < 0, "epoll_create1");
 	struct epoll_event event, events[100];
 
-	event.events = EPOLLIN;
+	event.events = EPOLLIN | EPOLLOUT;
 	event.data.fd = listen_fd;
 
 	ret = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listen_fd, &event);
@@ -136,7 +136,7 @@ int main(void)
 				client_fd = accept(listen_fd, NULL, NULL);
 				DIE(client_fd < 0, "accept");
 
-				event.events = EPOLLIN;
+				event.events = EPOLLIN | EPOLLOUT;
 				event.data.fd = client_fd;
 
 				ret = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event);
@@ -167,6 +167,8 @@ int main(void)
 					// TODO - parse message with parse_command and populate lib
 					// TODO - handle request from client
 					ret = lib_run(&lib);
+					ret = send_socket(events[i].data.fd, "OK", 2);
+					printf("%d\n", ret);
 				}
 			}
 		}
