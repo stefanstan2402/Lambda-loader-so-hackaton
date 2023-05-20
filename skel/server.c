@@ -161,21 +161,61 @@ int main(void)
 					memset(func, 0, BUFLEN);
 					memset(params, 0, BUFLEN);
 					ret = parse_command(buf, name, func, params);
-					DIE(ret < 0, "parse_command");
+					if (ret < 0) {
+						fprintf(logger, "Error parsing command\n");
+						close_socket(events[i].data.fd);
+						continue;
+					}
 					fprintf(logger, "Received command: %s %s %s\n", name, func, params);
-					// TODO - parse message with parse_command and populate lib
-					// TODO - handle request from client
-					ret = lib_run(&lib);
-					// ret = send_socket(events[i].data.fd, "OK", 2);
-					// send socket name, func and params
-					ret = send_socket(events[i].data.fd, name, strlen(name));
+
+					struct lib *lib = malloc(sizeof(struct lib));
+					lib->libname = malloc(strlen(name) + 1);
+					strcpy(lib->libname, name);
+
+					if (strlen(func) > 0) {
+						lib->funcname = malloc(strlen(func) + 1);
+						strcpy(lib->funcname, func);
+					}
+					
+					if (strlen(params) > 0) {
+						lib->filename = malloc(strlen(params) + 1);
+						strcpy(lib->filename, params);
+					}
+			
+					lib->outputfile = malloc(strlen(OUTPUTFILE_TEMPLATE) + 1);
+					// use mkstemp to create a unique file name
+					strcpy(lib->outputfile, OUTPUTFILE_TEMPLATE);
+					int fd = mkstemp(lib->outputfile);
+
+					pid_t pid = fork();
+
+					switch (pid) {
+						case -1:
+							fprintf(logger, "Error forking\n");
+							break;
+						case 0:
+							// child process
+							dup2(fd, STDOUT_FILENO);
+							close(fd);
+							ret = lib_run(lib);
+							if (ret < 0) {
+								fprintf(logger, "Error running command from client\n");
+							}
+							exit(0);
+							break;
+						default:
+							// parent process
+							waitpid(pid, NULL, 0);
+							ret = send_socket(events[i].data.fd, name, strlen(name));
+							if (ret < 0) {
+								fprintf(logger, "Error sending response to client\n");
+							}
+							close(fd);
+							break;
+					}
 				}
 			}
 		}
-
-		/* TODO - parse message with parse_command and populate lib */
-		/* TODO - handle request from client */
-		ret = lib_run(&lib);
 	}
 
 	return 0;
