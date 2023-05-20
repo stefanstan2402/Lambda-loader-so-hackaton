@@ -27,20 +27,15 @@ static int lib_prehooks(struct lib *lib)
 		fprintf(logger, "libname is NULL\n");
 		return 1;
 	}
-
-	// if (lib->funcname == NULL) {
-	// 	lib->funcname = malloc(4);
-	// 	strcpy(lib->funcname, "run");
-	// }
-
 	return 0;
 }
 
 static int lib_load(struct lib *lib)
 {
 	// load library from lib.libname
-	lib->handle = dlopen(lib->libname, RTLD_LAZY);
-	if (!lib->handle) {
+	lib->handle = dlopen(lib->libname, RTLD_NOW);
+	
+	if (lib->handle == NULL) {
 		if (lib->funcname == NULL) {
 			printf("Error: %s could not be executed.\n", lib->libname);
 		} else if (lib->filename == NULL) {
@@ -48,7 +43,6 @@ static int lib_load(struct lib *lib)
 		} else {
 			printf("Error: %s %s %s could not be executed.\n", lib->libname, lib->funcname, lib->filename);
 		}
-
 		fprintf(logger, "dlopen: %s\n", dlerror());
 		return 1;
 	}
@@ -70,6 +64,7 @@ static int lib_execute(struct lib *lib)
 
 			lib->run = dlsym(lib->handle, lib->funcname);
 			if (!lib->run) {
+				printf("Error: %s %s %s could not be executed.\n", lib->libname, lib->funcname, lib->filename);
 				fprintf(logger, "dlsym: %s\n", dlerror());
 				err = 1;
 			}
@@ -81,6 +76,7 @@ static int lib_execute(struct lib *lib)
 		if (lib->p_run == NULL) {
 			lib->p_run = dlsym(lib->handle, lib->funcname);
 			if (!lib->p_run) {
+				printf("Error: %s %s %s could not be executed.\n", lib->libname, lib->funcname, lib->filename);
 				fprintf(logger, "dlsym: %s\n", dlerror());
 				err = 1;
 			}
@@ -256,6 +252,7 @@ int main(void)
 						case 0:
 							// child process
 							dup2(fd, STDOUT_FILENO);
+							setvbuf(stdout, NULL, _IONBF, 0);
 							close(fd);
 							ret = lib_run(lib);
 							if (ret < 0) {
