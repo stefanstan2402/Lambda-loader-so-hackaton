@@ -16,13 +16,13 @@
 extern "C" {
 #endif
 
-extern FILE *log;
-const char socket_path[] = "golden_gate";
+extern FILE *logger;
+extern const char socket_path[];
 
 #define DIE(assertion, call_description)				\
 	do {								\
 		if (assertion)	{					\
-			fprintf(log, "%s: %s",				\
+			fprintf(logger, "%s: %s",				\
 				call_description, strerror(errno));	\
 			exit(EXIT_FAILURE);				\
 		}							\

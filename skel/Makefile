@@ -10,16 +10,19 @@ build: outdir server
 outdir:
 	@mkdir -p $(OUTPUT_DIR)
 
-server: server.o libipc.so
+server: server.o libipc.so utils.o
 	$(CC) -o $@ $< $(LDLIBS) $(LDFLAGS)
 
 server.o: server.c server.h ipc.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-libipc.so: ipc.o
+libipc.so: ipc.o utils.o
 	$(CC) -shared -o $@ $^
 
 ipc.o: ipc.c ipc.h
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+utils.o: utils.c utils.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 .PHONY: clean

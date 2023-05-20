@@ -15,6 +15,8 @@
 #define OUTPUTFILE_TEMPLATE "../checker/output/out-XXXXXX"
 #endif
 
+FILE *logger = NULL;
+
 static int lib_prehooks(struct lib *lib)
 {
 	return 0;
@@ -73,8 +75,8 @@ int main(void)
 	int ret;
 	struct lib lib;
 
-	FILE *log = fopen("server.log", "wa");
-	if (log == NULL) {
+	FILE *logger = fopen("server.log", "wa");
+	if (logger == NULL) {
 		perror("Error opening log file");
 		return 1;
 	}
@@ -86,7 +88,7 @@ int main(void)
 	struct sockaddr_un addr;
 	populate_sockaddr_unix(&addr);
 
-	ret = bind(listen_fd, (struct sockaddr *)addr, sizeof(addr));
+	ret = bind(listen_fd, (struct sockaddr *) &addr, sizeof(addr));
 	DIE(ret < 0, "bind");
 
 	ret = listen(listen_fd, 10);
