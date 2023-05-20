@@ -9,6 +9,7 @@
 
 #include "ipc.h"
 #include "server.h"
+#include "utils.h"
 
 #ifndef OUTPUTFILE_TEMPLATE
 #define OUTPUTFILE_TEMPLATE "../checker/output/out-XXXXXX"
@@ -72,8 +73,15 @@ int main(void)
 	int ret;
 	struct lib lib;
 
+	FILE *log = fopen("server.log", "wa");
+	if (log == NULL) {
+		perror("Error opening log file");
+		return 1;
+	}
+
 	/* TODO - Implement server connection */
 	int listen_fd = create_socket();
+	DIE(listen_fd < 0, "error creating listen socket\n");
 
 
 	while(1) {
