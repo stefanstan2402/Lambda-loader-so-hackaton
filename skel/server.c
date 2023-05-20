@@ -16,6 +16,7 @@
 #endif
 
 FILE *logger = NULL;
+const char socket_path[] = "golden_gate";
 
 static int lib_prehooks(struct lib *lib)
 {
@@ -86,7 +87,7 @@ int main(void)
 	DIE(listen_fd < 0, "error creating listen socket\n");
 
 	struct sockaddr_un addr;
-	populate_sockaddr_unix(&addr);
+	populate_sockaddr_unix(&addr, socket_path);
 
 	ret = bind(listen_fd, (struct sockaddr *) &addr, sizeof(addr));
 	DIE(ret < 0, "bind");

@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 extern FILE *logger;
-extern const char socket_path[];
+// const char socket_path[] = "golden_gate";
 
 #define DIE(assertion, call_description)				\
 	do {								\
@@ -28,7 +28,7 @@ extern const char socket_path[];
 		}							\
 	} while (0)
 
-void populate_sockaddr_unix(struct sockaddr_un *addr); 
+void populate_sockaddr_unix(struct sockaddr_un *addr, const char socket_path[]); 
 
 #ifdef __cplusplus
 }

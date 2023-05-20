@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-fPIC -Wall -Wextra
+CFLAGS=-fPIC -Wall -Wextra -g
 LDFLAGS=-ldl
 OUTPUT_DIR=$(abspath ../checker/output/)
 CFLAGS+=-DOUTPUT_TEMPLATE="\"$(OUTPUT_DIR)/out-XXXXXX\""
@@ -10,7 +10,7 @@ build: outdir server
 outdir:
 	@mkdir -p $(OUTPUT_DIR)
 
-server: server.o libipc.so utils.o
+server: server.o libipc.so
 	$(CC) -o $@ $< $(LDLIBS) $(LDFLAGS)
 
 server.o: server.c server.h ipc.h

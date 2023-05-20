@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-// #include <sys/socket.h>
-// #include <sys/un.h>
-// #include <unistd.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <unistd.h>
 
 #include "ipc.h"
 #include "utils.h"
+
 const char socket_path[] = "golden_gate";
 
 int create_socket()
@@ -29,7 +30,7 @@ int connect_socket(int fd)
 	// connect to unix socket
 	int rc = 0;
 	struct sockaddr_un addr;
-	populate_sockaddr_unix(&addr);
+	populate_sockaddr_unix(&addr, socket_path);
 
 	rc = connect(fd, (struct sockaddr *)&addr, sizeof(addr));	
 
