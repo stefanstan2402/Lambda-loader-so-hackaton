@@ -11,6 +11,7 @@
 #include "ipc.h"
 #include "server.h"
 #include "utils.h"
+#include <pthread.h>
 
 #ifndef OUTPUTFILE_TEMPLATE
 #define OUTPUTFILE_TEMPLATE "../checker/output/out-XXXXXX"
@@ -129,6 +130,73 @@ static int parse_command(const char *buf, char *name, char *func, char *params)
 	return sscanf(buf, "%s %s %s", name, func, params);
 }
 
+static void add_queue (pid_t pid, char* file, struct queue_pid_outs **q, int fd) {
+	struct queue_pid_outs *new = malloc(sizeof(struct queue_pid_outs));
+	new->pid = pid;
+	new->fd = fd;
+
+	new->output = malloc(strlen(file) + 1);
+	strcpy(new->output, file);
+	new->next = NULL;
+
+	if (*q == NULL) {
+		*q = new;
+		(*q)->head = new;
+		(*q)->tail = new;
+	} else {
+		(*q)->tail->next = new;
+		(*q)->tail = new;
+	}
+}
+
+static struct queue_pid_outs *remove_queue (struct queue_pid_outs **q) {
+	if (*q == NULL) {
+		return NULL;
+	}
+
+	struct queue_pid_outs *aux = (*q)->head;
+	if ((*q)->head == (*q)->tail) {
+		*q = NULL;
+		(*q)->head = NULL;
+		(*q)->tail = NULL;
+	
+		return aux;
+	} else {
+		*q = (*q)->next;
+		(*q)->head = (*q);	
+	}
+	
+	return aux;
+}
+
+void *wait_pids(void *arg) {
+	struct queue_pid_outs *q = (struct queue_pid_outs *) arg;
+	int rc = 0;
+
+	while (1) {
+		if (q == NULL) {
+			continue;
+		} else {
+			int status;
+			struct queue_pid_outs *aux = remove_queue(&q);
+
+			rc = waitpid(aux->pid, &status, 0);
+			if (rc < 0) {
+				fprintf(logger, "waitpid\n");
+				return NULL;
+			}
+
+			rc = send_socket(aux->fd, aux->output, strlen(aux->output) + 1);
+			if (rc < 0) {
+				fprintf(logger, "send_socket\n");
+				return NULL;
+			}
+		}
+	}
+
+	return NULL;
+}
+
 int main(void)
 {
 	int ret;
@@ -174,7 +242,13 @@ int main(void)
 	int nfds = 0;
 	int client_fd;
 	
-	while(1) {
+	struct queue_pid_outs *queue = malloc(sizeof(struct queue_pid_outs));
+
+	// pthread_t thread = 0;
+	// ret = pthread_create(&thread, NULL, wait_pids, queue);
+	// DIE(ret < 0, "pthread_create");
+
+	while(1) {	
 
 		/* TODO - get message from client */
 
@@ -258,11 +332,13 @@ int main(void)
 							if (ret < 0) {
 								fprintf(logger, "Error running command from client\n");
 							}
-							exit(0);
+							exit(ret);
 							break;
 						default:
 							// parent process
+							// add_queue(pid, lib->outputfile, &queue, events[i].data.fd);
 							waitpid(pid, &status, 0);
+
 							ret = send_socket(events[i].data.fd, lib->outputfile, strlen(lib->outputfile));
 							if (ret < 0) {
 								fprintf(logger, "Error sending response to client\n");
@@ -274,6 +350,10 @@ int main(void)
 			}
 		}
 	}
+
+	// join thread
+	// ret = pthread_join(thread, NULL);
+	// DIE(ret < 0, "pthread_join");
 
 	return 0;
 }

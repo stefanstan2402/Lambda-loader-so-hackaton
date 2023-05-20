@@ -25,4 +25,14 @@ struct lib {
 	lambda_param_func_t p_run;
 };
 
+
+struct queue_pid_outs {
+	pid_t pid;
+	int fd;
+	char *output;
+	struct queue_pid_outs *next;
+	struct queue_pid_outs *head;
+	struct queue_pid_outs *tail;
+};
+
 #endif /* SERVER_H */
