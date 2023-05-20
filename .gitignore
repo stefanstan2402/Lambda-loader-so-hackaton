@@ -56,3 +56,4 @@ server.log
 .vscode
 client
 golden_gate
+checker/output

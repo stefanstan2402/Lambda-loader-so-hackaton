@@ -14,7 +14,6 @@ int create_socket()
 {
 	// create unix socket
 	int fd;
-	fprintf(stdout, "Creating socket...\n");
 	fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd < 0) {
 		perror("socket");

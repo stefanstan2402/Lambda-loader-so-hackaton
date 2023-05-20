@@ -23,21 +23,80 @@ const char socket_path[] = "../golden_gate";
 
 static int lib_prehooks(struct lib *lib)
 {
+	if (lib->libname == NULL) {
+		fprintf(logger, "libname is NULL\n");
+		return 1;
+	}
+
+	// if (lib->funcname == NULL) {
+	// 	lib->funcname = malloc(4);
+	// 	strcpy(lib->funcname, "run");
+	// }
+
 	return 0;
 }
 
 static int lib_load(struct lib *lib)
 {
+	// load library from lib.libname
+	lib->handle = dlopen(lib->libname, RTLD_LAZY);
+	if (!lib->handle) {
+		if (lib->funcname == NULL) {
+			printf("Error: %s could not be executed.\n", lib->libname);
+		} else if (lib->filename == NULL) {
+			printf("Error: %s %s could not be executed.\n", lib->libname, lib->funcname);
+		} else {
+			printf("Error: %s %s %s could not be executed.\n", lib->libname, lib->funcname, lib->filename);
+		}
+
+		fprintf(logger, "dlopen: %s\n", dlerror());
+		return 1;
+	}
+
 	return 0;
 }
 
 static int lib_execute(struct lib *lib)
 {
-	return 0;
+	int err = 0;
+
+	if (lib->filename == NULL) {
+		// call lib.run
+		if (lib->run == NULL) {
+			if (lib->funcname == NULL) {
+				lib->funcname = malloc(4);
+				strcpy(lib->funcname, "run");
+			}
+
+			lib->run = dlsym(lib->handle, lib->funcname);
+			if (!lib->run) {
+				fprintf(logger, "dlsym: %s\n", dlerror());
+				err = 1;
+			}
+		}
+
+		lib->run();
+	} else {
+		// call lib.p_run
+		if (lib->p_run == NULL) {
+			lib->p_run = dlsym(lib->handle, lib->funcname);
+			if (!lib->p_run) {
+				fprintf(logger, "dlsym: %s\n", dlerror());
+				err = 1;
+			}
+		}
+
+		lib->p_run(lib->filename);
+	}
+
+	return err;
 }
 
 static int lib_close(struct lib *lib)
 {
+	// close library
+	dlclose(lib->handle);
+
 	return 0;
 }
 
@@ -188,6 +247,7 @@ int main(void)
 					int fd = mkstemp(lib->outputfile);
 
 					pid_t pid = fork();
+					int status;
 
 					switch (pid) {
 						case -1:
@@ -205,8 +265,8 @@ int main(void)
 							break;
 						default:
 							// parent process
-							waitpid(pid, NULL, 0);
-							ret = send_socket(events[i].data.fd, name, strlen(name));
+							waitpid(pid, &status, 0);
+							ret = send_socket(events[i].data.fd, lib->outputfile, strlen(lib->outputfile));
 							if (ret < 0) {
 								fprintf(logger, "Error sending response to client\n");
 							}
