@@ -54,3 +54,5 @@ dkms.conf
 server
 server.log
 .vscode
+client
+golden_gate

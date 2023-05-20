@@ -136,7 +136,7 @@ int main(void)
 				client_fd = accept(listen_fd, NULL, NULL);
 				DIE(client_fd < 0, "accept");
 
-				event.events = EPOLLIN | EPOLLOUT;
+				event.events = EPOLLIN ;
 				event.data.fd = client_fd;
 
 				ret = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &event);
@@ -160,15 +160,15 @@ int main(void)
 					memset(name, 0, BUFLEN);
 					memset(func, 0, BUFLEN);
 					memset(params, 0, BUFLEN);
-
 					ret = parse_command(buf, name, func, params);
 					DIE(ret < 0, "parse_command");
 					fprintf(logger, "Received command: %s %s %s\n", name, func, params);
 					// TODO - parse message with parse_command and populate lib
 					// TODO - handle request from client
 					ret = lib_run(&lib);
-					ret = send_socket(events[i].data.fd, "OK", 2);
-					printf("%d\n", ret);
+					// ret = send_socket(events[i].data.fd, "OK", 2);
+					// send socket name, func and params
+					ret = send_socket(events[i].data.fd, name, strlen(name));
 				}
 			}
 		}

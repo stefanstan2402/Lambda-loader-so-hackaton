@@ -38,13 +38,18 @@ int connect_socket(int fd)
 
 ssize_t send_socket(int fd, const char *buf, size_t len)
 {
-	printf("Sending %zu bytes...\n", len);
 	size_t total_bytes_sent = 0;
 	size_t curr_bytes_sent = 0;
 
+	// send the number of bytes to be sent
+	curr_bytes_sent = send(fd, &len, sizeof(size_t), 0);
+	if (curr_bytes_sent < 0) {
+		perror("send socket");
+		return -1;
+	}
+
 	while (total_bytes_sent < len) {
 		curr_bytes_sent = send(fd, buf + total_bytes_sent, len - total_bytes_sent, 0);
-		printf("Trimiseram atatia %zu bytes...\n", curr_bytes_sent);	
 		if (curr_bytes_sent < 0) {
 			perror("send socket");
 			return -1;
@@ -57,15 +62,20 @@ ssize_t send_socket(int fd, const char *buf, size_t len)
 		total_bytes_sent += curr_bytes_sent;
 	}
 
-	return total_bytes_sent;
 }
 
 ssize_t recv_socket(int fd, char *buf, size_t len)
 {
-	printf("Receiving %zu bytes...\n", len);
 	size_t total_bytes_received = 0;
 	size_t curr_bytes_received = 0;
-	
+
+	// receive the number of bytes to be received
+	curr_bytes_received = recv(fd, &len, sizeof(size_t), 0);
+	if (curr_bytes_received == -1) {
+		perror("recv");
+		return -1;
+	}
+
 	while(len > total_bytes_received) {
 		curr_bytes_received = recv(fd, buf + total_bytes_received, len - total_bytes_received, 0);
 		if (curr_bytes_received == -1) {
@@ -73,7 +83,6 @@ ssize_t recv_socket(int fd, char *buf, size_t len)
 			return -1;
 		}
 		if (curr_bytes_received == 0) {
-			fprintf(stderr, "EOF\n");
 			return 0;
 		}
 		total_bytes_received += curr_bytes_received;
