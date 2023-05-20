@@ -8,14 +8,13 @@
 #include "ipc.h"
 #include "utils.h"
 
-const char socket_path[] = "golden_gate";
+const char socket_path[] = "../golden_gate";
 
 int create_socket()
 {
 	// create unix socket
 	int fd;
-	struct sockaddr_un addr;
-
+	fprintf(stdout, "Creating socket...\n");
 	fd = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (fd < 0) {
 		perror("socket");
@@ -85,5 +84,6 @@ ssize_t recv_socket(int fd, char *buf, size_t len)
 
 void close_socket(int fd)
 {
+	close(fd);
 }
 
