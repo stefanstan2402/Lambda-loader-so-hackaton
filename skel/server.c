@@ -73,6 +73,8 @@ int main(void)
 	struct lib lib;
 
 	/* TODO - Implement server connection */
+	int listen_fd = create_socket();
+
 
 	while(1) {
 
