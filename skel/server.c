@@ -82,6 +82,10 @@ int main(void)
 		return 1;
 	}
 
+	fprintf(logger, "server started\n");
+	// remove socket path
+	remove(socket_path);
+
 	/* TODO - Implement server connection */
 	int listen_fd = create_socket();
 	DIE(listen_fd < 0, "error creating listen socket\n");

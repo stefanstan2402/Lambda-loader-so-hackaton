@@ -62,8 +62,25 @@ ssize_t send_socket(int fd, const char *buf, size_t len)
 
 ssize_t recv_socket(int fd, char *buf, size_t len)
 {
+	size_t total_bytes_received = 0;
+	size_t curr_bytes_received = 0;
 	
-	return -1;
+	while(len > total_bytes_received) {
+		curr_bytes_received = recv(fd, buf + total_bytes_received, len - total_bytes_received, 0);
+		if (curr_bytes_received == -1) {
+			perror("recv");
+			return -1;
+		}
+		if (curr_bytes_received == 0) {
+			fprintf(stderr, "EOF\n");
+			return 0;
+		}
+		total_bytes_received += curr_bytes_received;
+		if (total_bytes_received == len) {
+			break;
+		}
+	}
+	return total_bytes_received;
 }
 
 void close_socket(int fd)
