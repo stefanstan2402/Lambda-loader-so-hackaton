@@ -17,7 +17,6 @@ extern "C" {
 #endif
 
 extern FILE *logger;
-// const char socket_path[] = "golden_gate";
 
 #define DIE(assertion, call_description)				\
 	do {								\

@@ -39,11 +39,30 @@ int connect_socket(int fd)
 
 ssize_t send_socket(int fd, const char *buf, size_t len)
 {
-	return -1;
+	size_t total_bytes_sent = 0;
+	size_t curr_bytes_sent = 0;
+
+	while (total_bytes_sent < len) {
+		curr_bytes_sent = send(fd, buf + total_bytes_sent, len - total_bytes_sent, 0);
+		
+		if (curr_bytes_sent < 0) {
+			perror("send socket");
+			return -1;
+		}
+
+		if (curr_bytes_sent = 0) {
+			return total_bytes_sent;
+		}
+
+		total_bytes_sent += curr_bytes_sent;
+	}
+
+	return total_bytes_sent;
 }
 
 ssize_t recv_socket(int fd, char *buf, size_t len)
 {
+	
 	return -1;
 }
 

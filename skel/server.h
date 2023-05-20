@@ -25,15 +25,4 @@ struct lib {
 	lambda_param_func_t p_run;
 };
 
-// extern FILE *logger;
-
-// #define DIE(assertion, call_description)				\
-// 	do {								\
-// 		if (assertion)	{					\
-// 			fprintf(logger, "%s: %s",				\
-// 				call_description, strerror(errno));	\
-// 			exit(EXIT_FAILURE);				\
-// 		}							\
-// 	} while (0)
-
 #endif /* SERVER_H */
