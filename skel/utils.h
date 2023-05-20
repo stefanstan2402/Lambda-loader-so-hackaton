@@ -8,12 +8,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/un.h>
+#include <unistd.h>
+#include <sys/socket.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern FILE *log;
+const char socket_path[] = "golden_gate";
 
 #define DIE(assertion, call_description)				\
 	do {								\
@@ -23,6 +27,8 @@ extern FILE *log;
 			exit(EXIT_FAILURE);				\
 		}							\
 	} while (0)
+
+void populate_sockaddr_unix(struct sockaddr_un *addr); 
 
 #ifdef __cplusplus
 }

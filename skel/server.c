@@ -83,6 +83,15 @@ int main(void)
 	int listen_fd = create_socket();
 	DIE(listen_fd < 0, "error creating listen socket\n");
 
+	struct sockaddr_un addr;
+	populate_sockaddr_unix(&addr);
+
+	ret = bind(listen_fd, (struct sockaddr *)addr, sizeof(addr));
+	DIE(ret < 0, "bind");
+
+	ret = listen(listen_fd, 10);
+	DIE(ret < 0, "listen");
+
 
 	while(1) {
 

@@ -6,16 +6,33 @@
 #include <unistd.h>
 
 #include "ipc.h"
-
+#include "utils.h"
 
 int create_socket()
 {
-	return -1;
+	// create unix socket
+	int fd;
+	struct sockaddr_un addr;
+
+	fd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if (fd < 0) {
+		perror("socket");
+		return -1;
+	}
+
+	return fd;
 }
 
 int connect_socket(int fd)
 {
-	return -1;
+	// connect to unix socket
+	int rc = 0;
+	struct sockaddr_un addr;
+	populate_sockaddr(&addr);
+
+	rc = connect(fd, (struct sockaddr *)&addr, sizeof(addr));	
+
+	return rc;
 }
 
 ssize_t send_socket(int fd, const char *buf, size_t len)
